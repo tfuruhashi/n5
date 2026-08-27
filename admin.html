@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>管理画面 — Yappanese N5 判定テスト</title>
+<style>
+:root{--navy:#1f3864;--ink:#1a1a1a;--sub:#6b7280;--line:#e5e7eb;
+      --soft:#f7f8fa;--ok:#1e6b38;--okbg:#e6f4ea;--ng:#9b2c2c;--ngbg:#fdeaea}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Noto Sans JP","Yu Gothic",sans-serif;
+     color:var(--ink);line-height:1.7;font-size:15px;background:#fafbfc}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 20px 60px}
+.hide{display:none!important}
+h1{font-size:20px;margin:0 0 4px;color:var(--navy)}
+.lead{color:var(--sub);font-size:13px;margin:0 0 20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;
+      padding:22px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
+input,select{width:100%;padding:12px;font:inherit;border:1px solid var(--line);
+             border-radius:9px;background:var(--soft)}
+button{font:inherit;cursor:pointer;border:none;border-radius:9px}
+.btn{padding:13px 22px;background:var(--navy);color:#fff;font-weight:600}
+.btn.sm{padding:7px 14px;font-size:13px}
+.btn.sub{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.btn:disabled{opacity:.4;cursor:default}
+.err{background:var(--ngbg);color:var(--ng);padding:11px;border-radius:9px;
+     font-size:13px;margin-top:12px}
+
+/* 上部バー */
+.top{display:flex;justify-content:space-between;align-items:center;
+     padding:14px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px;
+     flex-wrap:wrap;gap:10px}
+.top .who{font-size:13px;color:var(--sub)}
+.top .who b{color:var(--ink);font-size:15px;display:block}
+.code{display:inline-block;background:var(--navy);color:#fff;padding:5px 14px;
+      border-radius:7px;font-weight:700;letter-spacing:2px;font-size:15px}
+
+/* 集計 */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+       gap:12px;margin-bottom:20px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:10px;
+      padding:14px 16px}
+.stat .n{font-size:28px;font-weight:700;color:var(--navy);line-height:1.2}
+.stat .l{font-size:12px;color:var(--sub)}
+
+/* 表 */
+.tools{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.tools input,.tools select{width:auto;min-width:150px;padding:9px 12px;font-size:14px}
+table{width:100%;border-collapse:collapse;background:#fff;
+      border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);
+      font-size:14px;vertical-align:middle}
+th{background:var(--soft);font-size:12px;color:var(--sub);font-weight:600;
+   white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;padding:3px 11px;border-radius:99px;
+      font-size:12px;font-weight:700;white-space:nowrap}
+.pill.p{background:var(--okbg);color:var(--ok)}
+.pill.f{background:var(--ngbg);color:var(--ng)}
+.empty{text-align:center;color:var(--sub);padding:40px;font-size:14px}
+.scroll{overflow-x:auto}
+@media(max-width:640px){ th,td{padding:9px 8px;font-size:13px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ============ ログイン ============ -->
+<section id="s-login">
+  <div class="card" style="max-width:420px;margin:60px auto 0">
+    <h1>管理画面</h1>
+    <p class="lead">日本語教育機関の担当者用</p>
+    <label for="email">メールアドレス</label>
+    <input type="email" id="email" autocomplete="username">
+    <label for="pw">パスワード</label>
+    <input type="password" id="pw" autocomplete="current-password">
+    <div id="loginErr" class="err hide"></div>
+    <button class="btn" id="login" style="width:100%;margin-top:20px">ログイン</button>
+    <p class="lead" style="margin:18px 0 0;text-align:center">
+      <a href="index.html" style="color:var(--sub)">受験画面へ</a></p>
+  </div>
+</section>
+
+<!-- ============ 本体 ============ -->
+<section id="s-main" class="hide">
+  <div class="top">
+    <div class="who"><b id="instName">—</b><span id="userEmail"></span></div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--sub)">学生に渡すコード</div>
+        <span class="code" id="instCode">—</span>
+      </div>
+      <button class="btn sub sm" id="logout">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="n" id="stTotal">0</div><div class="l">受験回数</div></div>
+    <div class="stat"><div class="n" id="stPeople">0</div><div class="l">受験者数</div></div>
+    <div class="stat"><div class="n" id="stPass">0</div><div class="l">合格</div></div>
+    <div class="stat"><div class="n" id="stRate">—</div><div class="l">合格率</div></div>
+  </div>
+
+  <div class="tools">
+    <input type="text" id="q" placeholder="名前で絞り込み">
+    <select id="filt">
+      <option value="">すべて</option>
+      <option value="p">合格のみ</option>
+      <option value="f">不合格のみ</option>
+    </select>
+    <button class="btn sub sm" id="csv">CSVで書き出す</button>
+    <button class="btn sub sm" id="reload">再読み込み</button>
+  </div>
+
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>受験日時</th><th>名前</th><th>国籍</th>
+        <th style="text-align:right">正答</th><th>判定</th>
+        <th>内訳</th><th></th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <div id="empty" class="empty hide">まだ受験記録がありません。<br>
+    学生に上のコードを渡してください。</div>
+</section>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let TOKEN = null, INST = null, ROWS = [];
+
+// ---------- ログイン ----------
+$('login').onclick = async () => {
+  $('loginErr').classList.add('hide');
+  $('login').disabled = true;
+  try {
+    const d = await db.signIn($('email').value.trim(), $('pw').value);
+    session.save(d);
+    TOKEN = d.access_token;
+    await load(d.user?.email);
+  } catch (e) {
+    $('loginErr').textContent = 'メールアドレスかパスワードが違います';
+    $('loginErr').classList.remove('hide');
+  } finally { $('login').disabled = false; }
+};
+
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('login').click(); });
+
+$('logout').onclick = () => { session.clear(); location.reload(); };
+
+// ---------- 起動時に前回のセッションを復元 ----------
+(async () => {
+  const s = session.get();
+  if (!s) return;
+  TOKEN = s.token;
+  try { await load(s.email); }
+  catch { session.clear(); }
+})();
+
+// ---------- データ読み込み ----------
+async function load(email){
+  // 所属機関を取得（RLSにより自校のみ返る）
+  const st = await db.select('staff', 'select=institution_id,name', TOKEN);
+  if (!st.length) throw new Error('所属機関が設定されていません');
+  const inst = await db.select('institutions',
+    `select=id,name,code,address&id=eq.${st[0].institution_id}`, TOKEN);
+  if (!inst.length) throw new Error('機関が見つかりません');
+  INST = inst[0];
+
+  $('s-login').classList.add('hide');
+  $('s-main').classList.remove('hide');
+  $('instName').textContent = INST.name;
+  $('userEmail').textContent = email || '';
+  $('instCode').textContent = INST.code;
+
+  await fetchRows();
+}
+
+async function fetchRows(){
+  ROWS = await db.select('v_results',
+    'select=*&order=tested_at.desc&limit=500', TOKEN);
+  draw();
+}
+
+$('reload').onclick = fetchRows;
+
+// ---------- 表示 ----------
+function draw(){
+  const kw = $('q').value.trim();
+  const f = $('filt').value;
+  const rows = ROWS.filter(r =>
+    (!kw || (r.examinee_name || '').includes(kw)) &&
+    (!f || (f === 'p' ? r.passed : !r.passed)));
+
+  $('stTotal').textContent = ROWS.length;
+  $('stPeople').textContent = new Set(ROWS.map(r => r.examinee_id)).size;
+  const pass = ROWS.filter(r => r.passed).length;
+  $('stPass').textContent = pass;
+  $('stRate').textContent = ROWS.length
+    ? Math.round(pass / ROWS.length * 100) + '%' : '—';
+
+  $('tb').innerHTML = '';
+  $('empty').classList.toggle('hide', rows.length > 0);
+
+  rows.forEach(r => {
+    const bd = r.breakdown || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="white-space:nowrap">${fmt(r.tested_at)}</td>
+      <td><b>${esc(r.examinee_name)}</b></td>
+      <td>${esc(r.nationality || '')}</td>
+      <td class="num">${r.correct} / ${r.total}</td>
+      <td><span class="pill ${r.passed ? 'p' : 'f'}">${r.passed ? '合格' : '不合格'}</span></td>
+      <td style="font-size:12px;color:var(--sub)">${
+        Object.entries(bd).map(([k, v]) => `${k} ${v}`).join('　')}</td>
+      <td><button class="btn sm" data-id="${r.id}">記録書</button></td>`;
+    tr.querySelector('button').onclick = () => {
+      localStorage.setItem('yp_record', JSON.stringify(r));
+      window.open('record.html', '_blank');
+    };
+    $('tb').appendChild(tr);
+  });
+}
+
+$('q').oninput = draw;
+$('filt').onchange = draw;
+
+function fmt(s){
+  const d = new Date(s);
+  return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/`
+       + `${String(d.getDate()).padStart(2, '0')} `
+       + `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+function esc(s){
+  return String(s || '').replace(/[&<>"]/g,
+    c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
+}
+
+// ---------- CSV ----------
+$('csv').onclick = () => {
+  const head = ['受験日時', '名前', '国籍', '生年月日', '使用ツール',
+                '出題数', '正答数', '合否基準', '判定', '内訳'];
+  const lines = [head.join(',')];
+  ROWS.forEach(r => {
+    lines.push([
+      fmt(r.tested_at), r.examinee_name, r.nationality || '',
+      r.birth_date || '', r.tool, r.total, r.correct,
+      `${r.total}問中${r.pass_mark}問以上`, r.passed ? '合格' : '不合格',
+      Object.entries(r.breakdown || {}).map(([k, v]) => `${k}:${v}`).join(' '),
+    ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(','));
+  });
+  // Excelで文字化けしないようBOMを付ける
+  const blob = new Blob(['\uFEFF' + lines.join('\r\n')],
+    {type: 'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `N5判定_${INST.code}_${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+};
+</script>
+</body>
+</html>
