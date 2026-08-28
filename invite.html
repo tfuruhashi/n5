@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>パスワードの設定 — Yappanese</title>
+<style>
+:root{--navy:#1f3864;--ink:#1a1a1a;--sub:#6b7280;--line:#e5e7eb;
+      --soft:#f7f8fa;--ok:#1e6b38;--okbg:#e6f4ea;--ng:#9b2c2c;--ngbg:#fdeaea}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Noto Sans JP",sans-serif;
+     color:var(--ink);line-height:1.75;font-size:16px;background:#fafbfc}
+.wrap{max-width:440px;margin:0 auto;padding:60px 20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:28px}
+h1{font-size:20px;margin:0 0 6px;color:var(--navy)}
+.lead{color:var(--sub);font-size:14px;margin:0 0 22px}
+label{display:block;font-size:13px;color:var(--sub);margin:14px 0 6px}
+input{width:100%;padding:14px;font:inherit;border:1px solid var(--line);
+      border-radius:10px;background:var(--soft)}
+input:focus{outline:2px solid var(--navy);outline-offset:-1px}
+button{width:100%;font:inherit;padding:15px;background:var(--navy);color:#fff;
+       font-weight:600;border:none;border-radius:10px;cursor:pointer;margin-top:22px}
+button:disabled{opacity:.4;cursor:default}
+.err{background:var(--ngbg);color:var(--ng);padding:12px;border-radius:9px;
+     font-size:14px;margin-top:14px}
+.ok{background:var(--okbg);color:var(--ok);padding:16px;border-radius:10px;
+    font-size:15px;text-align:center}
+.hint{font-size:12px;color:var(--sub);margin-top:6px}
+.hide{display:none!important}
+a{color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="card">
+
+  <div id="s-set">
+    <h1>パスワードの設定</h1>
+    <p class="lead">はじめてのログインです。パスワードを決めてください。</p>
+    <p class="lead" id="who" style="color:var(--ink)"></p>
+
+    <label for="pw">パスワード</label>
+    <input type="password" id="pw" autocomplete="new-password">
+    <div class="hint">8文字以上</div>
+
+    <label for="pw2">もう一度</label>
+    <input type="password" id="pw2" autocomplete="new-password">
+
+    <div id="err" class="err hide"></div>
+    <button id="save">設定する</button>
+  </div>
+
+  <div id="s-done" class="hide">
+    <div class="ok">
+      <b>設定しました</b><br>
+      このパスワードでログインできます。
+    </div>
+    <button onclick="location.href='admin.html'">管理画面へ</button>
+  </div>
+
+  <div id="s-bad" class="hide">
+    <h1>リンクが無効です</h1>
+    <p class="lead">
+      招待リンクの有効期限が切れているか、すでに使用済みです。<br>
+      学校の担当者に、招待の再送を依頼してください。
+    </p>
+    <button onclick="location.href='admin.html'">ログイン画面へ</button>
+  </div>
+
+</div>
+</div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+
+// 招待リンクは #access_token=... の形で戻ってくる
+const p = new URLSearchParams(location.hash.slice(1));
+const TOKEN = p.get('access_token');
+const TYPE = p.get('type');
+
+if (!TOKEN) {
+  $('s-set').classList.add('hide');
+  $('s-bad').classList.remove('hide');
+} else {
+  // 誰として招待されたかを表示する
+  db.me(TOKEN).then(u => {
+    if (u?.email) $('who').textContent = u.email;
+  }).catch(() => {});
+}
+
+$('save').onclick = async () => {
+  const a = $('pw').value, b = $('pw2').value;
+  $('err').classList.add('hide');
+  if (a.length < 8) { show('8文字以上にしてください'); return; }
+  if (a !== b) { show('2つのパスワードが一致しません'); return; }
+
+  $('save').disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: 'Bearer ' + TOKEN,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: a }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.msg || d.error_description || '設定できません');
+
+    // そのままログイン状態にする
+    session.save({ access_token: TOKEN, user: d });
+    $('s-set').classList.add('hide');
+    $('s-done').classList.remove('hide');
+  } catch (e) {
+    show(String(e.message || e).slice(0, 120));
+    $('save').disabled = false;
+  }
+};
+
+$('pw2').addEventListener('keydown', e => { if (e.key === 'Enter') $('save').click(); });
+
+function show(m){ $('err').textContent = m; $('err').classList.remove('hide'); }
+</script>
+</body>
+</html>

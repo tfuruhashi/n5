@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>全体管理 — Yappanese N5</title>
+<style>
+:root{--navy:#1f3864;--ink:#1a1a1a;--sub:#6b7280;--line:#e5e7eb;
+      --soft:#f7f8fa;--ok:#1e6b38;--okbg:#e6f4ea;--ng:#9b2c2c;--ngbg:#fdeaea;
+      --warn:#8a6100;--warnbg:#fff4d6}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Hiragino Sans","Noto Sans JP",sans-serif;
+     color:var(--ink);line-height:1.7;font-size:15px;background:#fafbfc}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 20px 60px}
+.hide{display:none!important}
+h1{font-size:20px;margin:0 0 4px;color:var(--navy)}
+h2{font-size:16px;margin:26px 0 12px;color:var(--navy)}
+.lead{color:var(--sub);font-size:13px;margin:0 0 20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;
+      padding:22px;margin-bottom:18px}
+label{display:block;font-size:13px;color:var(--sub);margin:12px 0 5px}
+input,select,textarea{width:100%;padding:12px;font:inherit;border:1px solid var(--line);
+                      border-radius:9px;background:var(--soft);font-family:inherit}
+textarea{min-height:60px;resize:vertical}
+button{font:inherit;cursor:pointer;border:none;border-radius:9px}
+.btn{padding:13px 22px;background:var(--navy);color:#fff;font-weight:600}
+.btn.sm{padding:7px 13px;font-size:13px}
+.btn.sub{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.btn.danger{background:#fff;color:var(--ng);border:1px solid var(--ng)}
+.btn:disabled{opacity:.4;cursor:default}
+.err{background:var(--ngbg);color:var(--ng);padding:11px;border-radius:9px;
+     font-size:13px;margin-top:12px}
+.ok{background:var(--okbg);color:var(--ok);padding:11px;border-radius:9px;
+    font-size:13px;margin-top:12px}
+.top{display:flex;justify-content:space-between;align-items:center;
+     padding:14px 0 18px;border-bottom:1px solid var(--line);margin-bottom:22px;
+     flex-wrap:wrap;gap:10px}
+.top .who{font-size:13px;color:var(--sub)}
+.top .who b{color:var(--ink);font-size:16px;display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;background:#fff;
+      border:1px solid var(--line);border-radius:12px;overflow:hidden}
+th,td{padding:11px 13px;text-align:left;border-bottom:1px solid var(--line);
+      font-size:14px;vertical-align:middle}
+th{background:var(--soft);font-size:12px;color:var(--sub);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.code{display:inline-block;background:var(--navy);color:#fff;padding:4px 12px;
+      border-radius:6px;font-weight:700;letter-spacing:1.5px;font-size:14px}
+.pill{display:inline-block;padding:3px 11px;border-radius:99px;font-size:12px;font-weight:700}
+.pill.a{background:var(--okbg);color:var(--ok)}
+.pill.s{background:var(--warnbg);color:var(--warn)}
+.empty{text-align:center;color:var(--sub);padding:40px;font-size:14px}
+.scroll{overflow-x:auto}
+.note{font-size:12px;color:var(--sub);background:var(--soft);
+      padding:12px;border-radius:9px;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ログイン -->
+<section id="s-login">
+  <div class="card" style="max-width:420px;margin:60px auto 0">
+    <h1>全体管理</h1>
+    <p class="lead">Yappanese 運営者用</p>
+    <label>メールアドレス</label><input type="email" id="email">
+    <label>パスワード</label><input type="password" id="pw">
+    <div id="loginErr" class="err hide"></div>
+    <button class="btn" id="login" style="width:100%;margin-top:20px">ログイン</button>
+  </div>
+</section>
+
+<!-- 本体 -->
+<section id="s-main" class="hide">
+  <div class="top">
+    <div class="who"><b>全体管理</b><span id="userEmail"></span></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn sub sm" id="reload">再読み込み</button>
+      <button class="btn sub sm" id="logout">ログアウト</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">学校を追加する</h2>
+    <p class="lead" style="margin-bottom:0">
+      学校名と担当者のメールアドレスを入れると、機関コードが自動で発行され、
+      担当者に招待メールが届きます。</p>
+    <div class="grid2">
+      <div>
+        <label>学校名<span style="color:#c00">*</span></label>
+        <input type="text" id="iName" placeholder="○○日本語学校">
+      </div>
+      <div>
+        <label>所在地</label>
+        <input type="text" id="iAddr" placeholder="東京都新宿区○○1-2-3">
+      </div>
+      <div>
+        <label>担当者のメールアドレス<span style="color:#c00">*</span></label>
+        <input type="email" id="iEmail" placeholder="tanaka@example.ac.jp">
+      </div>
+      <div>
+        <label>担当者名</label>
+        <input type="text" id="iStaff" placeholder="田中">
+      </div>
+    </div>
+    <label>メモ</label>
+    <textarea id="iNote" placeholder="経緯や連絡先など"></textarea>
+    <div id="addMsg"></div>
+    <button class="btn" id="add" style="margin-top:16px">追加して招待を送る</button>
+  </div>
+
+  <h2>学校の一覧</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>学校名</th><th>コード</th><th>状態</th>
+        <th style="text-align:right">担当者</th>
+        <th style="text-align:right">受験者</th>
+        <th style="text-align:right">受験回数</th>
+        <th>追加日</th><th></th>
+      </tr></thead>
+      <tbody id="tb"></tbody>
+    </table>
+  </div>
+  <div id="empty" class="empty hide">まだ学校がありません</div>
+
+  <div class="note">
+    <b>招待メールが届かない場合</b><br>
+    Supabase の Authentication → Emails でメールの送信設定を確認してください。
+    無料枠では送信数に上限があります。<br>
+    その場合は Supabase の管理画面から直接ユーザーを作成し、
+    SQL で staff に紐づける方法でも運用できます。
+  </div>
+</section>
+
+</div>
+
+<script src="config.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let TOKEN = null, ROWS = [];
+
+$('login').onclick = async () => {
+  $('loginErr').classList.add('hide'); $('login').disabled = true;
+  try {
+    const d = await db.signIn($('email').value.trim(), $('pw').value);
+    session.save(d); TOKEN = d.access_token;
+    await load(d.user?.email);
+  } catch {
+    $('loginErr').textContent = 'メールアドレスかパスワードが違います';
+    $('loginErr').classList.remove('hide');
+  } finally { $('login').disabled = false; }
+};
+$('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('login').click(); });
+$('logout').onclick = () => { session.clear(); location.reload(); };
+
+(async () => {
+  const s = session.get();
+  if (!s) return;
+  TOKEN = s.token;
+  try { await load(s.email); } catch { session.clear(); }
+})();
+
+async function load(email){
+  const st = await db.select('staff', 'select=role', TOKEN);
+  if (!st.length || st[0].role !== 'super')
+    throw new Error('この画面は運営者専用です');
+  $('s-login').classList.add('hide');
+  $('s-main').classList.remove('hide');
+  $('userEmail').textContent = email || '';
+  await fetchRows();
+}
+
+async function fetchRows(){
+  ROWS = await db.select('v_institutions', 'select=*&order=created_at.desc', TOKEN);
+  draw();
+}
+$('reload').onclick = fetchRows;
+
+function draw(){
+  $('tb').innerHTML = '';
+  $('empty').classList.toggle('hide', ROWS.length > 0);
+  ROWS.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><b>${esc(r.name)}</b>
+        ${r.address ? `<br><small style="color:var(--sub)">${esc(r.address)}</small>` : ''}</td>
+      <td><span class="code">${r.code}</span></td>
+      <td><span class="pill ${r.status === 'active' ? 'a' : 's'}">${
+        r.status === 'active' ? '利用中' : '停止中'}</span></td>
+      <td class="num">${r.staff_count}</td>
+      <td class="num">${r.examinee_count}</td>
+      <td class="num">${r.result_count}</td>
+      <td style="white-space:nowrap;font-size:13px">${(r.created_at || '').slice(0, 10)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn sub sm" data-a="inv">担当者を追加</button>
+        <button class="btn ${r.status === 'active' ? 'danger' : 'sub'} sm" data-a="tgl">${
+          r.status === 'active' ? '停止' : '再開'}</button>
+      </td>`;
+    tr.querySelector('[data-a=inv]').onclick = () => inviteStaff(r);
+    tr.querySelector('[data-a=tgl]').onclick = () => toggle(r);
+    $('tb').appendChild(tr);
+  });
+}
+
+// ---------- 学校の追加 ----------
+$('add').onclick = async () => {
+  const name = $('iName').value.trim(), email = $('iEmail').value.trim();
+  $('addMsg').innerHTML = '';
+  if (!name || !email) { msg('err', '学校名とメールアドレスは必須です'); return; }
+  $('add').disabled = true;
+  try {
+    const r = await api({
+      action: 'create_institution',
+      name, address: $('iAddr').value.trim(),
+      email, staff_name: $('iStaff').value.trim(),
+      note: $('iNote').value.trim(),
+    });
+    msg('ok', `<b>${esc(r.institution.name)}</b> を追加しました。`
+      + `機関コード <span class="code">${r.institution.code}</span><br>`
+      + (r.already_existed
+        ? '※ このメールアドレスは登録済みだったため、既存のアカウントに紐づけました。'
+        : `${esc(email)} に招待メールを送りました。`));
+    ['iName','iAddr','iEmail','iStaff','iNote'].forEach(i => $(i).value = '');
+    await fetchRows();
+  } catch (e) {
+    msg('err', String(e.message || e).slice(0, 300));
+  } finally { $('add').disabled = false; }
+};
+
+async function inviteStaff(inst){
+  const email = prompt(`${inst.name} に担当者を追加します。\nメールアドレスを入力してください。`);
+  if (!email) return;
+  const name = prompt('担当者名（任意）') || '';
+  try {
+    const r = await api({
+      action: 'invite_staff', institution_id: inst.id,
+      email: email.trim(), staff_name: name.trim(), role: 'admin',
+    });
+    alert(r.already_existed
+      ? '登録済みのメールアドレスだったため、既存のアカウントに紐づけました。'
+      : '招待メールを送りました。');
+    await fetchRows();
+  } catch (e) { alert('失敗しました：' + (e.message || e)); }
+}
+
+async function toggle(inst){
+  const to = inst.status === 'active' ? 'suspended' : 'active';
+  if (to === 'suspended' &&
+      !confirm(`${inst.name} を停止しますか。\n停止中は学生が受験できなくなります。`)) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/institutions?id=eq.${inst.id}`, {
+    method: 'PATCH',
+    headers: {apikey: SUPABASE_KEY, Authorization: 'Bearer ' + TOKEN,
+              'Content-Type': 'application/json'},
+    body: JSON.stringify({status: to}),
+  });
+  await fetchRows();
+}
+
+// ---------- 共通 ----------
+async function api(body){
+  const r = await fetch('/api/invite', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN},
+    body: JSON.stringify(body),
+  });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.error || '失敗しました');
+  return d;
+}
+function msg(k, html){ $('addMsg').innerHTML = `<div class="${k}">${html}</div>`; }
+function esc(s){ return String(s || '').replace(/[&<>"]/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+</script>
+</body>
+</html>

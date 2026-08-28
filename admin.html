@@ -61,6 +61,17 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 .pill.f{background:var(--ngbg);color:var(--ng)}
 .empty{text-align:center;color:var(--sub);padding:40px;font-size:14px}
 .scroll{overflow-x:auto}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px}
+.tab{padding:10px 18px;background:none;border:none;border-bottom:2px solid transparent;
+     color:var(--sub);font-size:14px;cursor:pointer}
+.tab.on{color:var(--navy);border-bottom-color:var(--navy);font-weight:700}
+.ok{background:var(--okbg);color:var(--ok);padding:11px;border-radius:9px;
+    font-size:13px;margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:640px){.grid2{grid-template-columns:1fr}}
+.pill.r{background:#eef2fa;color:var(--navy)}
+.note{font-size:12px;color:var(--sub);background:var(--soft);
+      padding:12px;border-radius:9px;margin-top:14px}
 @media(max-width:640px){ th,td{padding:9px 8px;font-size:13px} }
 </style>
 </head>
@@ -96,6 +107,13 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     </div>
   </div>
 
+  <div class="tabs">
+    <button class="tab on" data-t="results">受験結果</button>
+    <button class="tab" data-t="staff">担当者</button>
+    <button class="tab" data-t="settings">学校の情報</button>
+  </div>
+
+  <div id="t-results">
   <div class="stats">
     <div class="stat"><div class="n" id="stTotal">0</div><div class="l">受験回数</div></div>
     <div class="stat"><div class="n" id="stPeople">0</div><div class="l">受験者数</div></div>
@@ -126,6 +144,54 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
   </div>
   <div id="empty" class="empty hide">まだ受験記録がありません。<br>
     学生に上のコードを渡してください。</div>
+  </div><!-- /t-results -->
+
+  <!-- ============ 担当者 ============ -->
+  <div id="t-staff" class="hide">
+    <div class="card">
+      <h2 style="margin:0 0 6px;font-size:16px;color:var(--navy)">担当者を追加する</h2>
+      <p class="lead" style="margin-bottom:0">
+        メールアドレスを入れると、その方に招待メールが届きます。
+        受け取った方がパスワードを設定すると、この管理画面を使えるようになります。</p>
+      <div class="grid2">
+        <div><label>メールアドレス<span style="color:#c00">*</span></label>
+          <input type="email" id="sEmail" placeholder="tanaka@example.ac.jp"></div>
+        <div><label>お名前</label>
+          <input type="text" id="sName" placeholder="田中"></div>
+      </div>
+      <label>権限</label>
+      <select id="sRole">
+        <option value="staff">担当者（結果の閲覧・記録書の発行）</option>
+        <option value="admin">管理者（担当者の追加もできる）</option>
+      </select>
+      <div id="sMsg"></div>
+      <button class="btn" id="sAdd" style="margin-top:16px">招待を送る</button>
+    </div>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>お名前</th><th>メールアドレス</th><th>権限</th><th>追加日</th></tr></thead>
+        <tbody id="stb"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ============ 学校の情報 ============ -->
+  <div id="t-settings" class="hide">
+    <div class="card">
+      <h2 style="margin:0 0 6px;font-size:16px;color:var(--navy)">学校の情報</h2>
+      <p class="lead" style="margin-bottom:0">
+        ここで登録した内容が、入管提出用の記録書に印字されます。</p>
+      <label>学校名</label><input type="text" id="cName">
+      <label>所在地</label><input type="text" id="cAddr">
+      <div class="note">
+        <b>学生に渡すコード</b>　<span class="code" id="cCode">—</span><br>
+        このコードは変更できません。学生はこれを受験画面に入力します。
+      </div>
+      <div id="cMsg"></div>
+      <button class="btn" id="cSave" style="margin-top:16px">保存する</button>
+    </div>
+  </div>
 </section>
 
 </div>
@@ -241,6 +307,82 @@ function esc(s){
   return String(s || '').replace(/[&<>"]/g,
     c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;'}[c]));
 }
+
+// ---------- タブ ----------
+document.querySelectorAll('.tab').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.toggle('on', x === b));
+    ['results','staff','settings'].forEach(t =>
+      $('t-' + t).classList.toggle('hide', t !== b.dataset.t));
+    if (b.dataset.t === 'staff') loadStaff();
+    if (b.dataset.t === 'settings') fillSettings();
+  };
+});
+
+// ---------- 担当者 ----------
+async function loadStaff(){
+  const rows = await db.select('v_staff',
+    `select=*&institution_id=eq.${INST.id}&order=invited_at.desc`, TOKEN);
+  $('stb').innerHTML = rows.map(r => `
+    <tr><td><b>${esc(r.name || '（未設定）')}</b></td>
+      <td>${esc(r.email || '')}</td>
+      <td><span class="pill r">${
+        r.role === 'super' ? '運営者' : r.role === 'admin' ? '管理者' : '担当者'}</span></td>
+      <td style="font-size:13px">${(r.invited_at || '').slice(0, 10)}</td></tr>`).join('');
+}
+
+$('sAdd').onclick = async () => {
+  const email = $('sEmail').value.trim();
+  $('sMsg').innerHTML = '';
+  if (!email) { $('sMsg').innerHTML = '<div class="err">メールアドレスを入れてください</div>'; return; }
+  $('sAdd').disabled = true;
+  try {
+    const r = await fetch('/api/invite', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN},
+      body: JSON.stringify({action: 'invite_staff', email,
+        staff_name: $('sName').value.trim(), role: $('sRole').value}),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || '失敗しました');
+    $('sMsg').innerHTML = `<div class="ok">${d.already_existed
+      ? '登録済みのメールアドレスだったため、既存のアカウントに紐づけました。'
+      : esc(email) + ' に招待メールを送りました。'}</div>`;
+    $('sEmail').value = ''; $('sName').value = '';
+    await loadStaff();
+  } catch (e) {
+    $('sMsg').innerHTML = `<div class="err">${esc(String(e.message || e)).slice(0, 200)}</div>`;
+  } finally { $('sAdd').disabled = false; }
+};
+
+// ---------- 学校の情報 ----------
+function fillSettings(){
+  $('cName').value = INST.name || '';
+  $('cAddr').value = INST.address || '';
+  $('cCode').textContent = INST.code;
+}
+
+$('cSave').onclick = async () => {
+  $('cMsg').innerHTML = '';
+  $('cSave').disabled = true;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/institutions?id=eq.${INST.id}`, {
+      method: 'PATCH',
+      headers: {apikey: SUPABASE_KEY, Authorization: 'Bearer ' + TOKEN,
+                'Content-Type': 'application/json', Prefer: 'return=representation'},
+      body: JSON.stringify({name: $('cName').value.trim(),
+                            address: $('cAddr').value.trim() || null}),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    const d = await r.json();
+    INST = d[0] || INST;
+    $('instName').textContent = INST.name;
+    $('cMsg').innerHTML = '<div class="ok">保存しました</div>';
+  } catch (e) {
+    $('cMsg').innerHTML = '<div class="err">保存できません。'
+      + '管理者の権限が必要です。</div>';
+  } finally { $('cSave').disabled = false; }
+};
 
 // ---------- CSV ----------
 $('csv').onclick = () => {
