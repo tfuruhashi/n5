@@ -77,6 +77,8 @@ button{font:inherit;cursor:pointer;border:none;border-radius:10px}
        background:var(--ink);color:#fff;padding:12px 22px;border-radius:99px;
        font-size:14px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9}
 .toast.on{opacity:1}
+.instr{background:#eef2fa;border:1px solid #c9d5ea;border-radius:10px;
+       padding:10px 14px;font-size:13px;color:var(--navy);margin-bottom:14px}
 .linkbar{text-align:center;margin-top:26px;font-size:13px}
 .linkbar a{color:var(--sub)}
 </style>
@@ -126,6 +128,7 @@ button{font:inherit;cursor:pointer;border:none;border-radius:10px}
 <section id="s-quiz" class="hide">
   <div class="bar"><i id="prog"></i></div>
   <div class="meta"><span id="count"></span><span class="tag" id="kind"></span></div>
+  <div class="instr" id="instr"></div>
   <div id="audioBox" class="audio hide">
     <div style="font-size:28px">🔊</div>
     <button class="play" id="play">音声を聞く</button>
@@ -161,6 +164,24 @@ button{font:inherit;cursor:pointer;border:none;border-radius:10px}
 const $ = id => document.getElementById(id);
 const KIND = {vocab:'文字・語彙', grammar:'文法', reading:'読解', listening:'聴解'};
 const DIST = {vocab:3, grammar:2, reading:2, listening:3};
+
+// 問題の「sub」種別ごとの指示文（JLPTの指示文形式に合わせる）
+const INSTR = {
+  '漢字読み':   '下線の言葉の正しい読み方を選んでください。',
+  '表記':       '下線の言葉を漢字で書くとき、最も良いものを選んでください。',
+  '文脈規定':   '（　）に入る最も良い言葉を選んでください。',
+  '言い換え':   '下線の言葉と意味が最も近いものを選んでください。',
+  '助詞':       '（　）に入る最も良い言葉を選んでください。',
+  '文型':       '（　）に入る最も良い言葉を選んでください。',
+  '活用':       '（　）に入る最も良い言葉を選んでください。',
+  '文の組み立て': '（　）に入る最も良い言葉を選んでください。',
+  '短文':       '文章を読んで、質問に最も合う答えを選んでください。',
+  '情報検索':   '文章を読んで、質問に最も合う答えを選んでください。',
+  '課題理解':   '話を聞いて、質問に最も合う答えを選んでください。',
+  '発話表現':   'イラスト・場面に最も合う言い方を選んでください。',
+  '即時応答':   '最も良い返事を選んでください。',
+  'ポイント理解': '話を聞いて、質問に最も合う答えを選んでください。',
+};
 
 let POOL = [], quiz = [], idx = 0, picked = null, plays = 0, answers = [];
 let inst = null;   // {id, name, code}
@@ -245,6 +266,7 @@ function render(){
   $('prog').style.width = (idx / quiz.length * 100) + '%';
   $('count').textContent = `問 ${idx + 1} / ${quiz.length}`;
   $('kind').textContent = KIND[q.type];
+  $('instr').textContent = INSTR[q.sub] || '最も良い答えを選んでください。';
 
   if (q.type === 'listening'){
     $('audioBox').classList.remove('hide');

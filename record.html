@@ -39,9 +39,11 @@ td.c{text-align:center}
          font-size:11px;padding:5px 10px;border:1px solid var(--accent);
          border-radius:6px;background:#fff;color:var(--accent);cursor:pointer}
 
-.q{width:100%;border-collapse:collapse}
-.q th,.q td{border:1px solid var(--line);padding:4px 3px;text-align:center;font-size:11px}
+.q{width:100%;border-collapse:collapse;table-layout:fixed}
+.q th,.q td{border:1px solid var(--line);padding:4px 2px;text-align:center;
+            font-size:10px;width:auto;overflow:hidden;white-space:nowrap}
 .q th{background:var(--soft);font-weight:600}
+.q th:first-child,.q td:first-child{width:9%;white-space:normal}
 .q .o{color:#1e6b38;font-weight:700}
 .q .x{color:#9b2c2c;font-weight:700}
 
@@ -223,9 +225,10 @@ if (!r) {
     || '<tr><th>—</th><td class="c">—</td></tr>';
 
   const det = r.details || [];
+  const SHORT = {'文字・語彙': '語彙', '文法': '文法', '読解': '読解', '聴解': '聴解'};
   $('qh').innerHTML = '<th>問</th>' + det.map((x, i) => `<th>${x.no || i + 1}</th>`).join('');
   $('qk').innerHTML = '<th>分野</th>'
-    + det.map(x => `<td style="font-size:10px">${x.type || ''}</td>`).join('');
+    + det.map(x => `<td>${SHORT[x.type] || x.type || ''}</td>`).join('');
   $('qr').innerHTML = '<th>正誤</th>'
     + det.map(x => `<td class="${x.correct ? 'o' : 'x'}">${x.correct ? '○' : '×'}</td>`).join('');
 
