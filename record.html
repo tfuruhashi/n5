@@ -3,45 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>日本語能力確認記録書</title>
+<title>別紙（日本語能力確認記録）</title>
 <style>
-:root{--ink:#111;--sub:#666;--line:#333;--soft:#f4f5f7}
+:root{--ink:#111;--sub:#666;--line:#333;--soft:#f4f5f7;--accent:#1f3864}
 *{box-sizing:border-box}
 body{margin:0;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;
      color:var(--ink);line-height:1.8;font-size:14px;background:#eceff3}
 .sheet{width:210mm;min-height:297mm;margin:20px auto;background:#fff;
-       padding:18mm 16mm;box-shadow:0 2px 12px rgba(0,0,0,.12)}
-h1{font-size:19px;text-align:center;margin:0 0 4px;letter-spacing:3px}
-.sub{text-align:center;font-size:11px;color:var(--sub);margin:0 0 22px}
-h2{font-size:13px;margin:22px 0 8px;padding-left:8px;
+       padding:16mm 15mm;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.letterhead{display:flex;justify-content:space-between;align-items:flex-end;
+            border-bottom:2px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.letterhead .instname{font-size:19px;font-weight:700;letter-spacing:1px}
+.letterhead .instaddr{font-size:10.5px;color:var(--sub);margin-top:2px}
+.letterhead .docno{font-size:10.5px;color:var(--sub);text-align:right}
+h1{font-size:16px;text-align:center;margin:0 0 2px;letter-spacing:2px}
+.sub{text-align:center;font-size:11px;color:var(--sub);margin:0 0 4px}
+.warn{text-align:center;font-size:10.5px;color:#8a5a00;background:#fff6e0;
+      border:1px solid #e8cf8a;padding:5px 8px;margin:0 0 18px;border-radius:4px}
+h2{font-size:13px;margin:20px 0 8px;padding-left:8px;
    border-left:4px solid var(--line);letter-spacing:1px}
 table{width:100%;border-collapse:collapse;margin-bottom:4px}
-th,td{border:1px solid var(--line);padding:7px 10px;font-size:13px;
+th,td{border:1px solid var(--line);padding:6px 10px;font-size:12.5px;
       vertical-align:middle}
-th{background:var(--soft);width:32%;text-align:left;font-weight:600}
+th{background:var(--soft);width:30%;text-align:left;font-weight:600}
 td.c{text-align:center}
-.big{font-size:17px;font-weight:700}
-.verdict{font-size:20px;font-weight:700;letter-spacing:4px}
+
+.pastebox{border:2px solid var(--accent);border-radius:6px;padding:14px 16px;
+          background:#f7f9fc;position:relative}
+.pastebox .label{font-size:10.5px;color:var(--accent);font-weight:700;
+                 letter-spacing:1px;margin-bottom:6px}
+.pastebox .verdictline{font-size:13px;font-weight:700;margin-bottom:8px;
+                        padding:6px 8px;background:#e8edf6;border-radius:4px}
+.pastebox .body{font-size:13.5px;line-height:2}
+.copybtn{position:absolute;top:10px;right:12px;font:inherit;font-family:sans-serif;
+         font-size:11px;padding:5px 10px;border:1px solid var(--accent);
+         border-radius:6px;background:#fff;color:var(--accent);cursor:pointer}
+
 .q{width:100%;border-collapse:collapse}
-.q th,.q td{border:1px solid var(--line);padding:5px 4px;text-align:center;
-            font-size:12px}
+.q th,.q td{border:1px solid var(--line);padding:4px 3px;text-align:center;font-size:11px}
 .q th{background:var(--soft);font-weight:600}
 .q .o{color:#1e6b38;font-weight:700}
 .q .x{color:#9b2c2c;font-weight:700}
-.note{font-size:11px;color:var(--sub);line-height:1.9;margin-top:14px;
+
+.note{font-size:10.5px;color:var(--sub);line-height:1.9;margin-top:14px;
       border:1px solid #ccc;padding:11px 13px;background:#fafafa}
-.sign{margin-top:26px}
+.sign{margin-top:22px}
 .sign table th{width:24%}
-.sign .fill{height:34px}
+.sign .fill{height:32px}
+
 .bar{max-width:210mm;margin:0 auto;padding:0 0 8px;display:flex;gap:10px;
      justify-content:flex-end}
 button{font:inherit;font-family:sans-serif;padding:10px 20px;border:none;
        border-radius:8px;background:#1f3864;color:#fff;cursor:pointer;font-size:14px}
 button.sub{background:#fff;color:#1f3864;border:1px solid #1f3864}
+
 @media print{
   body{background:#fff}
   .sheet{margin:0;box-shadow:none;width:auto;min-height:auto;padding:12mm}
-  .bar{display:none}
+  .bar,.no-print{display:none}
   @page{size:A4;margin:12mm}
 }
 </style>
@@ -54,41 +73,55 @@ button.sub{background:#fff;color:#1f3864;border:1px solid #1f3864}
 </div>
 
 <div class="sheet" id="sheet">
-  <h1>日本語能力確認記録書</h1>
+  <div class="letterhead">
+    <div>
+      <div class="instname" id="instHead">—</div>
+      <div class="instaddr" id="instAddrHead"></div>
+    </div>
+    <div class="docno" id="docNo"></div>
+  </div>
+
+  <h1>別　紙（日本語能力確認記録）</h1>
   <p class="sub">
-    在留資格「留学」に係る日本語能力の確認記録<br>
-    Record of Japanese Language Proficiency Assessment
+    出入国在留管理庁「各種確認書」様式　２（５）その他　欄に対応する添付資料<br>
+    Attachment corresponding to Section 2(5) "Others" of the Certificate of Eligibility screening form
+  </p>
+  <p class="warn">
+    本書は上記教育機関が作成主体となる文書です。入管様式そのものではなく、
+    「各種確認書」２（５）その他欄への転記、または本書の添付資料としてご利用ください。
+    Yappaneseは確認に用いた評価ツールの提供者であり、本書の作成主体ではありません。
   </p>
 
-  <h2>1. 受験者</h2>
+  <h2>1. 基本情報</h2>
   <table>
-    <tr><th>氏名</th><td class="big" id="name">—</td></tr>
+    <tr><th>教育機関／課程等名</th><td id="inst">—</td></tr>
+    <tr><th>申請人氏名（記名）</th><td id="name">—</td></tr>
     <tr><th>国籍</th><td id="nat">—</td></tr>
-    <tr><th>生年月日</th><td id="birth">—</td></tr>
-  </table>
-
-  <h2>2. 実施機関</h2>
-  <table>
-    <tr><th>機関名</th><td id="inst">—</td></tr>
-    <tr><th>所在地</th><td id="addr">—</td></tr>
+    <tr><th>実施日</th><td id="at">—</td></tr>
     <tr><th>実施場所</th><td id="place">—</td></tr>
-    <tr><th>確認実施者</th><td id="interviewer">—</td></tr>
+    <tr><th>確認実施者（面接担当）</th><td id="interviewer">—</td></tr>
   </table>
 
-  <h2>3. 確認の方法</h2>
+  <h2>2. ２（５）その他　記載内容（転記用）</h2>
+  <div class="pastebox">
+    <button class="copybtn no-print" onclick="copyText()">文言をコピー</button>
+    <div class="label">判定</div>
+    <div class="verdictline" id="verdictline">—</div>
+    <div class="label" style="margin-top:10px">記載文（そのまま転記可）</div>
+    <div class="body" id="paste">—</div>
+  </div>
+
+  <h2>3. 確認方法の詳細</h2>
   <table>
     <tr><th>使用した評価ツール</th><td id="tool">—</td></tr>
-    <tr><th>実施日時</th><td id="at">—</td></tr>
-    <tr><th>出題数</th><td class="c big" id="total">—</td></tr>
-    <tr><th>正答数</th><td class="c big" id="correct">—</td></tr>
+    <tr><th>出題数</th><td class="c" id="total">—</td></tr>
+    <tr><th>正答数</th><td class="c" id="correct">—</td></tr>
     <tr><th>合否基準</th><td id="mark">—</td></tr>
-    <tr><th>判定</th><td class="c verdict" id="verdict">—</td></tr>
+    <tr><th>内訳（言語知識・読解／聴解）</th><td id="split">—</td></tr>
   </table>
 
-  <h2>4. 分野別の内訳</h2>
+  <h2>4. 参考情報（内部記録・様式外）</h2>
   <table id="bdTable"><tbody id="bd"></tbody></table>
-
-  <h2>5. 各問の正誤</h2>
   <table class="q">
     <thead><tr id="qh"></tr></thead>
     <tbody><tr id="qk"></tr><tr id="qr"></tr></tbody>
@@ -97,7 +130,7 @@ button.sub{background:#fff;color:#1f3864;border:1px solid #1f3864}
   <div class="note" id="note"></div>
 
   <div class="sign">
-    <h2>6. 確認者の署名</h2>
+    <h2>5. 確認者の署名</h2>
     <table>
       <tr><th>役職・氏名</th><td class="fill"></td></tr>
       <tr><th>確認日</th><td class="fill"></td></tr>
@@ -110,39 +143,87 @@ button.sub{background:#fff;color:#1f3864;border:1px solid #1f3864}
 const $ = id => document.getElementById(id);
 const r = JSON.parse(localStorage.getItem('yp_record') || 'null');
 
+function reiwa(y){ return y - 2018; }
+
+function parseFrac(s){
+  // "3/3" -> [3,3]
+  if (typeof s !== 'string' || !s.includes('/')) return [0, 0];
+  const [c, t] = s.split('/').map(n => parseInt(n, 10) || 0);
+  return [c, t];
+}
+
+let pasteText = '';
+
 if (!r) {
-  document.getElementById('sheet').innerHTML =
+  $('sheet').innerHTML =
     '<p style="text-align:center;padding:60px">記録が見つかりません。'
-    + '<br>管理画面から「記録書」を押してください。</p>';
+    + '<br>管理画面から「別紙（記録書）」を押してください。</p>';
 } else {
   const d = new Date(r.tested_at);
   const pad = n => String(n).padStart(2, '0');
+  const dateJa = `令和${reiwa(d.getFullYear())}年（${d.getFullYear()}年）`
+    + `${d.getMonth() + 1}月${d.getDate()}日`;
 
+  $('instHead').textContent = r.institution_name || '—';
+  $('instAddrHead').textContent = r.institution_address || '';
+  $('docNo').textContent = `記録番号：${r.institution_code || ''}-${
+    `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`}-${
+    String(r.id || '').slice(0, 8)}`;
+
+  $('inst').textContent = r.institution_name || '—';
   $('name').textContent = r.examinee_name || '—';
   $('nat').textContent = r.nationality || '（未記入）';
-  $('birth').textContent = r.birth_date || '（未記入）';
-  $('inst').textContent = r.institution_name || '—';
-  $('addr').textContent = r.institution_address || '（未記入）';
+  $('at').textContent = dateJa;
   $('place').textContent = r.place || r.institution_name || '（未記入）';
   $('interviewer').textContent = r.interviewer || '（署名欄に記入）';
   $('tool').textContent = r.tool || '—';
-  $('at').textContent =
-    `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日 `
-    + `${pad(d.getHours())}時${pad(d.getMinutes())}分`;
   $('total').textContent = `${r.total} 問`;
   $('correct').textContent = `${r.correct} 問`;
   $('mark').textContent = `${r.total}問中 ${r.pass_mark}問以上の正答をもって合格とする`;
-  $('verdict').textContent = r.passed ? '合　格' : '不合格';
 
-  // 分野別
+  // 分野別の内訳から「言語知識・読解」と「聴解」に集計
   const bd = r.breakdown || {};
+  let goDoc = [0, 0]; // 言語知識・読解 [correct, total]
+  let choukai = [0, 0]; // 聴解
+  Object.entries(bd).forEach(([k, v]) => {
+    const [c, t] = parseFrac(v);
+    if (k === '聴解') { choukai = [choukai[0] + c, choukai[1] + t]; }
+    else { goDoc = [goDoc[0] + c, goDoc[1] + t]; }
+  });
+  $('split').textContent =
+    `言語知識・読解 ${goDoc[1]}問（正答${goDoc[0]}）／聴解 ${choukai[1]}問（正答${choukai[0]}）`;
+
+  // 判定文（２（５）その他欄への記載例に準拠して自動生成）
+  const passed = !!r.passed;
+  $('verdictline').textContent = passed
+    ? '合格（日本語教育の参照枠における Ａ１ 相当）'
+    : '不合格（日本語教育の参照枠における Ａ１ 相当に未達）';
+  $('verdictline').style.background = passed ? '#e6f2ea' : '#fbe9e9';
+  $('verdictline').style.color = passed ? '#1e6b38' : '#9b2c2c';
+
+  if (passed) {
+    pasteText =
+      `入学に必要な語学力は日本語教育の参照枠における Ａ１ 相当であるところ、` +
+      `独自の日本語能力確認ツール「${r.tool}」（JLPT Ｎ５の出題形式・難易度・構成比に準拠して作成した自作の評価ツール）を用いて` +
+      `筆記試験を実施し、言語知識・読解${goDoc[1]}問、聴解${choukai[1]}問の計${r.total}問を出題したところ、` +
+      `${r.correct}問正答した（選考基準は${r.total}問中${r.pass_mark}問正答）。` +
+      `実施日：${dateJa}。実施ツール：${r.tool}。`;
+  } else {
+    pasteText =
+      `独自の日本語能力確認ツール「${r.tool}」（JLPT Ｎ５の出題形式・難易度・構成比に準拠して作成した自作の評価ツール）を用いて` +
+      `筆記試験を実施し、言語知識・読解${goDoc[1]}問、聴解${choukai[1]}問の計${r.total}問を出題したところ、` +
+      `${r.correct}問正答にとどまり、選考基準（${r.total}問中${r.pass_mark}問正答）に達しなかった。` +
+      `実施日：${dateJa}。実施ツール：${r.tool}。`;
+  }
+  $('paste').textContent = pasteText;
+
+  // 各問正誤（内部記録）
   $('bd').innerHTML = Object.entries(bd)
     .map(([k, v]) => `<tr><th>${k}</th><td class="c">${v}</td></tr>`).join('')
     || '<tr><th>—</th><td class="c">—</td></tr>';
 
-  // 各問
   const det = r.details || [];
-  $('qh').innerHTML = '<th>問</th>' + det.map(x => `<th>${x.no}</th>`).join('');
+  $('qh').innerHTML = '<th>問</th>' + det.map((x, i) => `<th>${x.no || i + 1}</th>`).join('');
   $('qk').innerHTML = '<th>分野</th>'
     + det.map(x => `<td style="font-size:10px">${x.type || ''}</td>`).join('');
   $('qr').innerHTML = '<th>正誤</th>'
@@ -151,18 +232,27 @@ if (!r) {
   $('note').innerHTML = `
     <b>本記録書について</b><br>
     ・出入国在留管理庁の通知により、在留資格「留学」の申請において、
-      日本語能力の証明は指定された試験の合格証明書または受入機関による面接記録によることとされている。
-      本記録書は後者にあたる。<br>
-    ・入管の示す確認方法の例は「試験の問題又はその同等レベルの問題を10問出題し、
-      正答率に照らして確認する」ものであり、本記録はこれに準拠している。<br>
+      日本語能力の証明は指定された試験の合格証明書または受入機関による確認記録によることとされている。
+      本記録はこれに準拠して所属機関が作成したものである。<br>
     ・使用した評価ツールはJLPT公式問題ではなく、
-      JLPT N5の出題形式・難易度・構成比（言語知識・読解 約72%／聴解 約28%）に準拠して
+      JLPT Ｎ５の出題形式・難易度・構成比（言語知識・読解 約72%／聴解 約28%）に準拠して
       作成した自作の評価ツールである。<br>
-    ・<b>本記録書の作成主体は上記の実施機関であり、確認は同機関の職員が実施したものである。</b><br>
-    ・各種確認書への転記に用いること。`;
+    ・評価は所属機関職員が立ち会う面接の場で実施されたものであり、
+      本記録書の作成主体は上記の実施機関である。Yappaneseは確認に用いた評価ツールの
+      提供者にとどまり、本書の作成・発行主体ではない。<br>
+    ・第2項の記載文は、「各種確認書」様式２（５）その他欄への転記、
+      または本書自体の添付資料としての利用を想定している。`;
 
-  document.title =
-    `日本語能力確認記録書_${r.examinee_name}_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+  document.title = `別紙_日本語能力確認記録_${r.examinee_name}_${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+}
+
+function copyText(){
+  navigator.clipboard.writeText(pasteText).then(() => {
+    const b = document.querySelector('.copybtn');
+    const orig = b.textContent;
+    b.textContent = 'コピーしました';
+    setTimeout(() => { b.textContent = orig; }, 1500);
+  });
 }
 </script>
 </body>

@@ -285,7 +285,7 @@ function draw(){
       <td><span class="pill ${r.passed ? 'p' : 'f'}">${r.passed ? '合格' : '不合格'}</span></td>
       <td style="font-size:12px;color:var(--sub)">${
         Object.entries(bd).map(([k, v]) => `${k} ${v}`).join('　')}</td>
-      <td><button class="btn sm" data-id="${r.id}">記録書</button></td>`;
+      <td><button class="btn sm" data-id="${r.id}">別紙（記録書）</button></td>`;
     tr.querySelector('button').onclick = () => {
       localStorage.setItem('yp_record', JSON.stringify(r));
       window.open('record.html', '_blank');
