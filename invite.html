@@ -35,8 +35,8 @@ a{color:var(--navy)}
 <div class="card">
 
   <div id="s-set">
-    <h1>パスワードの設定</h1>
-    <p class="lead">はじめてのログインです。パスワードを決めてください。</p>
+    <h1 id="setTitle">パスワードの設定</h1>
+    <p class="lead" id="setLead">はじめてのログインです。パスワードを決めてください。</p>
     <p class="lead" id="who" style="color:var(--ink)"></p>
 
     <label for="pw">パスワード</label>
@@ -83,6 +83,10 @@ if (!TOKEN) {
   $('s-set').classList.add('hide');
   $('s-bad').classList.remove('hide');
 } else {
+  if (TYPE === 'recovery') {
+    $('setTitle').textContent = 'パスワードの再設定';
+    $('setLead').textContent = '新しいパスワードを入力してください。';
+  }
   // 誰として招待されたかを表示する
   db.me(TOKEN).then(u => {
     if (u?.email) $('who').textContent = u.email;

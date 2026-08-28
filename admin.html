@@ -89,7 +89,9 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     <input type="password" id="pw" autocomplete="current-password">
     <div id="loginErr" class="err hide"></div>
     <button class="btn" id="login" style="width:100%;margin-top:20px">ログイン</button>
-    <p class="lead" style="margin:18px 0 0;text-align:center">
+    <p class="lead" style="margin:14px 0 0;text-align:center">
+      <a href="#" id="forgot" style="color:var(--sub)">パスワードをお忘れですか</a></p>
+    <p class="lead" style="margin:6px 0 0;text-align:center">
       <a href="index.html" style="color:var(--sub)">受験画面へ</a></p>
   </div>
 </section>
@@ -161,7 +163,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
       </div>
       <label>権限</label>
       <select id="sRole">
-        <option value="staff">担当者（結果の閲覧・記録書の発行）</option>
+        <option value="staff">担当者（結果の閲覧・別紙の発行）</option>
         <option value="admin">管理者（担当者の追加もできる）</option>
       </select>
       <div id="sMsg"></div>
@@ -181,7 +183,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     <div class="card">
       <h2 style="margin:0 0 6px;font-size:16px;color:var(--navy)">学校の情報</h2>
       <p class="lead" style="margin-bottom:0">
-        ここで登録した内容が、入管提出用の記録書に印字されます。</p>
+        ここで登録した内容が、別紙（日本語能力確認記録）に印字されます。</p>
       <label>学校名</label><input type="text" id="cName">
       <label>所在地</label><input type="text" id="cAddr">
       <div class="note">
@@ -217,6 +219,25 @@ $('login').onclick = async () => {
 };
 
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('login').click(); });
+
+$('forgot').onclick = async (e) => {
+  e.preventDefault();
+  const email = prompt('登録済みのメールアドレスを入力してください');
+  if (!email) return;
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: {apikey: SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: email.trim(),
+        redirect_to: location.origin + location.pathname.replace(/admin\.html$/, 'invite.html'),
+      }),
+    });
+    alert('パスワード再設定用のメールを送信しました。メールをご確認ください。');
+  } catch (e) {
+    alert('送信できませんでした。通信環境を確認してください。');
+  }
+};
 
 $('logout').onclick = () => { session.clear(); location.reload(); };
 

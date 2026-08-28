@@ -69,6 +69,8 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
     <label>パスワード</label><input type="password" id="pw">
     <div id="loginErr" class="err hide"></div>
     <button class="btn" id="login" style="width:100%;margin-top:20px">ログイン</button>
+    <p class="lead" style="margin:14px 0 0;text-align:center">
+      <a href="#" id="forgot" style="color:var(--sub)">パスワードをお忘れですか</a></p>
   </div>
 </section>
 
@@ -140,7 +142,7 @@ td.num{text-align:right;font-variant-numeric:tabular-nums}
 <script src="config.js"></script>
 <script>
 const $ = id => document.getElementById(id);
-let TOKEN = null, ROWS = [];
+let TOKEN = null, ROWS = [], ME_EMAIL = null;
 
 $('login').onclick = async () => {
   $('loginErr').classList.add('hide'); $('login').disabled = true;
@@ -154,6 +156,26 @@ $('login').onclick = async () => {
   } finally { $('login').disabled = false; }
 };
 $('pw').addEventListener('keydown', e => { if (e.key === 'Enter') $('login').click(); });
+
+$('forgot').onclick = async (e) => {
+  e.preventDefault();
+  const email = prompt('登録済みのメールアドレスを入力してください');
+  if (!email) return;
+  try {
+    await fetch(`${SUPABASE_URL}/auth/v1/recover`, {
+      method: 'POST',
+      headers: {apikey: SUPABASE_KEY, 'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        email: email.trim(),
+        redirect_to: location.origin + location.pathname.replace(/super\.html$/, 'invite.html'),
+      }),
+    });
+    alert('パスワード再設定用のメールを送信しました。メールをご確認ください。');
+  } catch (e) {
+    alert('送信できませんでした。通信環境を確認してください。');
+  }
+};
+
 $('logout').onclick = () => { session.clear(); location.reload(); };
 
 (async () => {
@@ -170,11 +192,22 @@ async function load(email){
   $('s-login').classList.add('hide');
   $('s-main').classList.remove('hide');
   $('userEmail').textContent = email || '';
+  ME_EMAIL = email || null;
   await fetchRows();
 }
 
 async function fetchRows(){
   ROWS = await db.select('v_institutions', 'select=*&order=created_at.desc', TOKEN);
+  // 停止/再開の監査情報（誰が・いつ）は v_institutions に含まれないため、
+  // institutions テーブルから別途取得してIDで結合する
+  try {
+    const aud = await db.select('institutions',
+      'select=id,status_changed_at,status_changed_by', TOKEN);
+    const byId = Object.fromEntries(aud.map(a => [a.id, a]));
+    ROWS = ROWS.map(r => ({...r, ...(byId[r.id] || {})}));
+  } catch (e) {
+    // 監査カラムが未追加の環境でも一覧自体は表示できるようにする
+  }
   draw();
 }
 $('reload').onclick = fetchRows;
@@ -189,7 +222,10 @@ function draw(){
         ${r.address ? `<br><small style="color:var(--sub)">${esc(r.address)}</small>` : ''}</td>
       <td><span class="code">${r.code}</span></td>
       <td><span class="pill ${r.status === 'active' ? 'a' : 's'}">${
-        r.status === 'active' ? '利用中' : '停止中'}</span></td>
+        r.status === 'active' ? '利用中' : '停止中'}</span>
+        ${r.status_changed_at ? `<br><small style="color:var(--sub)">${
+          (r.status_changed_at || '').slice(0, 10)}${
+          r.status_changed_by ? ' ／ ' + esc(r.status_changed_by) : ''}</small>` : ''}</td>
       <td class="num">${r.staff_count}</td>
       <td class="num">${r.examinee_count}</td>
       <td class="num">${r.result_count}</td>
@@ -254,7 +290,11 @@ async function toggle(inst){
     method: 'PATCH',
     headers: {apikey: SUPABASE_KEY, Authorization: 'Bearer ' + TOKEN,
               'Content-Type': 'application/json'},
-    body: JSON.stringify({status: to}),
+    body: JSON.stringify({
+      status: to,
+      status_changed_at: new Date().toISOString(),
+      status_changed_by: ME_EMAIL,
+    }),
   });
   await fetchRows();
 }
